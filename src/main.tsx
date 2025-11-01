@@ -8,7 +8,10 @@ import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import "./index.css";
-import Landing from "./pages/Landing.tsx";
+import Home from "./pages/Home.tsx";
+import ExperienceDetails from "./pages/ExperienceDetails.tsx";
+import Checkout from "./pages/Checkout.tsx";
+import Result from "./pages/Result.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import "./types/global.d.ts";
 
@@ -48,8 +51,11 @@ createRoot(document.getElementById("root")!).render(
         <BrowserRouter>
           <RouteSyncer />
           <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<AuthPage redirectAfterAuth="/" />} /> {/* TODO: change redirect after auth to correct page */}
+            <Route path="/" element={<Home />} />
+            <Route path="/experience/:id" element={<ExperienceDetails />} />
+            <Route path="/checkout/:id" element={<Checkout />} />
+            <Route path="/result/:id" element={<Result />} />
+            <Route path="/auth" element={<AuthPage redirectAfterAuth="/" />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

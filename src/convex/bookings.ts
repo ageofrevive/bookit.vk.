@@ -30,22 +30,27 @@ export const create = mutation({
     const experience = await ctx.db.get(args.experienceId);
 
     if (booking && experience) {
-      // Schedule email to be sent (non-blocking)
-      await ctx.scheduler.runAfter(
-        0,
-        internal.emails.sendBookingConfirmation,
-        {
-          customerEmail: args.customerEmail,
-          customerName: args.customerName,
-          bookingReference: booking.bookingReference,
-          experienceTitle: experience.title,
-          experienceLocation: experience.location,
-          date: args.date,
-          participants: args.participants,
-          totalPrice: args.totalPrice,
-          meetingPoint: experience.meetingPoint,
-        }
-      );
+      // Schedule email to be sent (non-blocking, will fail gracefully if API key not set)
+      try {
+        await ctx.scheduler.runAfter(
+          0,
+          internal.emails.sendBookingConfirmation,
+          {
+            customerEmail: args.customerEmail,
+            customerName: args.customerName,
+            bookingReference: booking.bookingReference,
+            experienceTitle: experience.title,
+            experienceLocation: experience.location,
+            date: args.date,
+            participants: args.participants,
+            totalPrice: args.totalPrice,
+            meetingPoint: experience.meetingPoint,
+          }
+        );
+      } catch (error) {
+        console.error("Failed to schedule email:", error);
+        // Continue with booking even if email scheduling fails
+      }
     }
 
     return bookingId;

@@ -12,7 +12,7 @@ import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 
 export default function Checkout() {
-  const { id } = useParams<{ id: Id<"experiences"> }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [date, setDate] = useState("");
   const [participants, setParticipants] = useState(1);
@@ -23,9 +23,23 @@ export default function Checkout() {
   const [promoApplied, setPromoApplied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const experience = useQuery(api.experiences.getById, id ? { id: id as Id<"experiences"> } : "skip");
+  const experience = useQuery(
+    api.experiences.getById, 
+    id && !id.startsWith(':') ? { id: id as Id<"experiences"> } : "skip"
+  );
   const validatePromo = useQuery(api.promoCodes.validate, promoCode ? { code: promoCode } : "skip");
   const createBooking = useMutation(api.bookings.create);
+
+  if (!id || id.startsWith(':')) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground mb-4">Invalid experience ID</p>
+          <Button onClick={() => navigate("/")}>Return to Home</Button>
+        </div>
+      </div>
+    );
+  }
 
   if (!experience) {
     return (

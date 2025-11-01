@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUser } from "./users";
+import { internal } from "./_generated/api";
 
 export const create = mutation({
   args: {
@@ -17,12 +18,37 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     
-    return await ctx.db.insert("bookings", {
+    const bookingId = await ctx.db.insert("bookings", {
       ...args,
       userId: user?._id,
       status: "confirmed" as const,
       bookingReference: `BK${Date.now().toString().slice(-8)}`,
     });
+
+    // Get the booking and experience details for the email
+    const booking = await ctx.db.get(bookingId);
+    const experience = await ctx.db.get(args.experienceId);
+
+    if (booking && experience) {
+      // Schedule email to be sent (non-blocking)
+      await ctx.scheduler.runAfter(
+        0,
+        internal.emails.sendBookingConfirmation,
+        {
+          customerEmail: args.customerEmail,
+          customerName: args.customerName,
+          bookingReference: booking.bookingReference,
+          experienceTitle: experience.title,
+          experienceLocation: experience.location,
+          date: args.date,
+          participants: args.participants,
+          totalPrice: args.totalPrice,
+          meetingPoint: experience.meetingPoint,
+        }
+      );
+    }
+
+    return bookingId;
   },
 });
 

@@ -25,12 +25,12 @@ export default function Checkout() {
 
   const experience = useQuery(
     api.experiences.getById, 
-    id && !id.startsWith(':') ? { id: id as Id<"experiences"> } : "skip"
+    id && id !== ":id" && !id.startsWith(':') ? { id: id as Id<"experiences"> } : "skip"
   );
   const validatePromo = useQuery(api.promoCodes.validate, promoCode ? { code: promoCode } : "skip");
   const createBooking = useMutation(api.bookings.create);
 
-  if (!id || id.startsWith(':')) {
+  if (!id || id === ":id" || id.startsWith(':')) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
